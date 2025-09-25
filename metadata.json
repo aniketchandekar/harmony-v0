@@ -1,0 +1,5 @@
+{
+  "name": "Harmony",
+  "description": "An AI-powered dashboard that analyzes uploaded UI designs and provides detailed feedback on layout, color, typography, and user experience using the Gemini API.",
+  "requestFramePermissions": []
+}
