@@ -26,11 +26,18 @@ export interface FeatureBaselineStatus {
   nonStandard?: boolean;
   hasWPT?: boolean;
   baselineYear?: number;
+  baselineLowDate?: string; // When feature reached "newly available" status
+  baselineHighDate?: string; // When feature reached "widely available" status
   dependsOn?: string[];
   related?: string[];
   behindFlag?: { [browser: string]: boolean | string };
   partialSupport?: boolean;
   partialNotes?: string;
+  discouraged?: {
+    according_to: string[];
+    alternatives?: string[];
+  };
+  caniuse?: string[]; // Caniuse feature IDs for deep linking
 }
 
 const BROWSER_SUPPORT_MAP: { [key: string]: string } = {
@@ -301,11 +308,15 @@ export const getFeatureBaselineStatus = (
     nonStandard: feature.nonStandard,
     hasWPT: feature.hasWPT,
     baselineYear: feature.baselineYear,
+    baselineLowDate: feature.status?.baseline_low_date,
+    baselineHighDate: feature.status?.baseline_high_date,
     dependsOn: feature.dependsOn,
     related: feature.related,
     behindFlag: feature.behindFlag,
     partialSupport: feature.partialSupport,
     partialNotes: feature.partialNotes,
+    discouraged: feature.discouraged,
+    caniuse: feature.caniuse,
   };
 };
 

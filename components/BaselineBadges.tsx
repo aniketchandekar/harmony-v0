@@ -11,6 +11,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   QuestionMarkCircleIcon,
+  SparkleIcon,
 } from "./Icons";
 
 interface BaselineBadgeProps {
@@ -120,11 +121,16 @@ interface BaselineBadgesProps {
     baseline?: FeatureBaselineStatus;
   };
   onFeatureClick?: (featureId: string) => void;
+  onAskAI?: (
+    featureName: string,
+    featureDetails: FeatureBaselineStatus | undefined
+  ) => void;
 }
 
 export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
   feature,
   onFeatureClick,
+  onAskAI,
 }) => {
   // Compute baseline on the fly if missing and we have an ID
   const baseline: FeatureBaselineStatus | undefined =
@@ -140,9 +146,23 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
             {baseline?.title || feature.name}
           </p>
-          <BaselineBadge
-            status={baseline ? baseline.status : ("unknown" as BaselineStatus)}
-          />
+          <div className="flex items-center gap-2">
+            <BaselineBadge
+              status={
+                baseline ? baseline.status : ("unknown" as BaselineStatus)
+              }
+            />
+            {onAskAI && (
+              <button
+                onClick={() => onAskAI(feature.name, baseline)}
+                className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-900/40 transition-colors"
+                title="Ask AI about this feature"
+              >
+                <SparkleIcon className="w-3 h-3 mr-1" />
+                Ask AI
+              </button>
+            )}
+          </div>
         </div>
 
         {baseline?.description && (
@@ -263,6 +283,28 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
                   Baseline {baseline.baselineYear}
                 </span>
               )}
+              {baseline.baselineLowDate && (
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+                  title={`Became newly available: ${new Date(
+                    baseline.baselineLowDate
+                  ).toLocaleDateString()}`}
+                >
+                  📅 Newly available{" "}
+                  {new Date(baseline.baselineLowDate).getFullYear()}
+                </span>
+              )}
+              {baseline.baselineHighDate && (
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800"
+                  title={`Became widely available: ${new Date(
+                    baseline.baselineHighDate
+                  ).toLocaleDateString()}`}
+                >
+                  🎯 Widely available{" "}
+                  {new Date(baseline.baselineHighDate).getFullYear()}
+                </span>
+              )}
               {(() => {
                 const missing = Object.entries(baseline.support)
                   .filter(([, ok]) => !ok)
@@ -287,9 +329,73 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
           </div>
         )}
 
+        {/* Discouraged feature warning */}
+        {baseline?.discouraged && (
+          <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                  ⚠️ Discouraged Feature
+                </h4>
+                <p className="text-xs text-red-700 dark:text-red-400 mb-2">
+                  This feature is discouraged and should be avoided in new
+                  projects.
+                </p>
+                {baseline.discouraged.alternatives &&
+                  baseline.discouraged.alternatives.length > 0 && (
+                    <div className="mb-2">
+                      <p className="text-xs font-medium text-red-700 dark:text-red-400 mb-1">
+                        Recommended alternatives:
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {baseline.discouraged.alternatives.map((alt) => (
+                          <button
+                            key={alt}
+                            onClick={() => onFeatureClick?.(alt)}
+                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/40 transition-colors cursor-pointer"
+                            title={`Switch to recommended alternative: ${alt}`}
+                          >
+                            ✅ {alt.split(".").pop()?.replace(/-/g, " ")}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                {baseline.discouraged.according_to &&
+                  baseline.discouraged.according_to.length > 0 && (
+                    <div className="text-xs">
+                      <span className="font-medium text-red-700 dark:text-red-400">
+                        Sources:{" "}
+                      </span>
+                      {baseline.discouraged.according_to.map((url, index) => (
+                        <span key={url}>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="text-red-600 dark:text-red-400 underline hover:text-red-800 dark:hover:text-red-300"
+                          >
+                            Official notice
+                          </a>
+                          {index <
+                            baseline.discouraged.according_to.length - 1 &&
+                            ", "}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Links */}
         {baseline &&
-          (baseline.mdn || baseline.spec || baseline.links?.explainer) && (
+          (baseline.mdn ||
+            baseline.spec ||
+            baseline.links?.explainer ||
+            baseline.caniuse) && (
             <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-3 flex-wrap">
               {baseline.mdn && (
                 <a
@@ -298,7 +404,7 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
                   rel="noreferrer noopener"
                   className="underline hover:text-indigo-600"
                 >
-                  MDN Docs
+                  📚 MDN Docs
                 </a>
               )}
               {baseline.spec && (
@@ -308,7 +414,7 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
                   rel="noreferrer noopener"
                   className="underline hover:text-indigo-600"
                 >
-                  Spec
+                  📋 Spec
                 </a>
               )}
               {baseline.links?.explainer && (
@@ -318,7 +424,18 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
                   rel="noreferrer noopener"
                   className="underline hover:text-indigo-600"
                 >
-                  Explainer
+                  💡 Explainer
+                </a>
+              )}
+              {baseline.caniuse && baseline.caniuse.length > 0 && (
+                <a
+                  href={`https://caniuse.com/${baseline.caniuse[0]}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="underline hover:text-indigo-600"
+                  title={`View detailed browser support on caniuse.com for ${baseline.caniuse[0]}`}
+                >
+                  🌐 Can I Use
                 </a>
               )}
               {baseline.title && (
@@ -331,7 +448,7 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
                   className="underline hover:text-indigo-600"
                   title="Open WPT results search"
                 >
-                  WPT Results
+                  🧪 WPT Results
                 </a>
               )}
             </div>

@@ -17,6 +17,13 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>("light");
   const [userNotes, setUserNotes] = useState<string>("");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [featureContext, setFeatureContext] = useState<
+    | {
+        featureName: string;
+        featureDetails: any;
+      }
+    | undefined
+  >(undefined);
 
   useEffect(() => {
     const isDarkMode =
@@ -45,6 +52,11 @@ const App: React.FC = () => {
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
+  };
+
+  const handleAskAI = (featureName: string, featureDetails: any) => {
+    setFeatureContext({ featureName, featureDetails });
+    setIsSidebarOpen(true);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,14 +144,19 @@ const App: React.FC = () => {
             implementationPlan={implementationPlan}
             isLoading={isLoading}
             hasFile={!!selectedFile}
+            onAskAI={handleAskAI}
           />
         </div>
       </main>
 
       <ChatSidebar
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={() => {
+          setIsSidebarOpen(false);
+          setFeatureContext(undefined);
+        }}
         implementationPlan={implementationPlan}
+        featureContext={featureContext}
       />
     </div>
   );

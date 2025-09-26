@@ -133,17 +133,20 @@ Do not include any markdown fences.`;
     const allUsedFeatureIds = new Set<string>();
     const allUsedFeatureNames = new Set<string>();
 
-    console.log('🔍 Starting deduplication process...');
+    console.log("🔍 Starting deduplication process...");
 
     // Enrich and ensure every section has at least two features
     plan.forEach((section: any, idx: number) => {
       console.log(`📋 Processing section ${idx + 1}: "${section.title}"`);
-      
+
       const existing = Array.isArray(section.webFeatures)
         ? section.webFeatures
         : [];
 
-      console.log(`  Raw features from AI:`, existing.map(f => f.name));
+      console.log(
+        `  Raw features from AI:`,
+        existing.map((f) => f.name)
+      );
 
       // Enrich any existing with baseline and deduplicate by featureId AND name
       const enrichedExisting = existing
@@ -156,7 +159,7 @@ Do not include any markdown fences.`;
           const resolvedId =
             f.featureId ||
             (f.name ? resolveFeatureIdByName(f.name) : undefined);
-          
+
           return {
             ...f,
             featureId: resolvedId || f.featureId,
@@ -166,41 +169,56 @@ Do not include any markdown fences.`;
         .filter((f: any) => {
           // Normalize the name for comparison
           const normalizedName = f.name.toLowerCase().trim();
-          
+
           // Check for similar variations of the same feature
-          const isVariationOfExisting = Array.from(allUsedFeatureNames).some(existingName => {
-            // Check if names are very similar (handle common variations)
-            return (
-              normalizedName.includes(existingName) ||
-              existingName.includes(normalizedName) ||
-              // Check for common variations like "optional chaining" vs "optional chaining (?)"
-              normalizedName.replace(/[^\w\s]/g, '').includes(existingName.replace(/[^\w\s]/g, '')) ||
-              existingName.replace(/[^\w\s]/g, '').includes(normalizedName.replace(/[^\w\s]/g, ''))
-            );
-          });
-          
+          const isVariationOfExisting = Array.from(allUsedFeatureNames).some(
+            (existingName) => {
+              // Check if names are very similar (handle common variations)
+              return (
+                normalizedName.includes(existingName) ||
+                existingName.includes(normalizedName) ||
+                // Check for common variations like "optional chaining" vs "optional chaining (?)"
+                normalizedName
+                  .replace(/[^\w\s]/g, "")
+                  .includes(existingName.replace(/[^\w\s]/g, "")) ||
+                existingName
+                  .replace(/[^\w\s]/g, "")
+                  .includes(normalizedName.replace(/[^\w\s]/g, ""))
+              );
+            }
+          );
+
           // Skip if we've already used this feature ID, name, or a variation of it
           if (f.featureId && allUsedFeatureIds.has(f.featureId)) {
-            console.log(`  ❌ Skipping duplicate ID: ${f.featureId} (${f.name})`);
+            console.log(
+              `  ❌ Skipping duplicate ID: ${f.featureId} (${f.name})`
+            );
             return false;
           }
-          if (allUsedFeatureNames.has(normalizedName) || isVariationOfExisting) {
+          if (
+            allUsedFeatureNames.has(normalizedName) ||
+            isVariationOfExisting
+          ) {
             console.log(`  ❌ Skipping duplicate/similar name: ${f.name}`);
             return false;
           }
-          
+
           // Mark as used if we have a valid featureId or name
           if (f.featureId) {
             allUsedFeatureIds.add(f.featureId);
           }
           allUsedFeatureNames.add(normalizedName);
-          console.log(`  ✅ Added feature: ${f.name} (ID: ${f.featureId || 'none'})`);
+          console.log(
+            `  ✅ Added feature: ${f.name} (ID: ${f.featureId || "none"})`
+          );
           return true;
         });
 
       // If fewer than 2, top up with rotating demo features (avoiding duplicates)
       const needed = Math.max(0, 2 - enrichedExisting.length);
-      console.log(`  📝 Need ${needed} more features for section "${section.title}"`);
+      console.log(
+        `  📝 Need ${needed} more features for section "${section.title}"`
+      );
       const fillers = [];
 
       for (let i = 0; i < needed; i++) {
@@ -211,13 +229,16 @@ Do not include any markdown fences.`;
           pick = demoPool[(idx + i + attempts) % demoPool.length];
           attempts++;
         } while (
-          (allUsedFeatureIds.has(pick.featureId) || 
-           allUsedFeatureNames.has(pick.name.toLowerCase().trim())) &&
+          (allUsedFeatureIds.has(pick.featureId) ||
+            allUsedFeatureNames.has(pick.name.toLowerCase().trim())) &&
           attempts < demoPool.length
         );
 
         const normalizedPickName = pick.name.toLowerCase().trim();
-        if (!allUsedFeatureIds.has(pick.featureId) && !allUsedFeatureNames.has(normalizedPickName)) {
+        if (
+          !allUsedFeatureIds.has(pick.featureId) &&
+          !allUsedFeatureNames.has(normalizedPickName)
+        ) {
           allUsedFeatureIds.add(pick.featureId);
           allUsedFeatureNames.add(normalizedPickName);
           fillers.push({
@@ -226,16 +247,23 @@ Do not include any markdown fences.`;
           });
           console.log(`  ➕ Added demo feature: ${pick.name}`);
         } else {
-          console.log(`  🚫 Could not find unused demo feature after ${attempts} attempts`);
+          console.log(
+            `  🚫 Could not find unused demo feature after ${attempts} attempts`
+          );
         }
       }
 
       section.webFeatures = [...enrichedExisting, ...fillers];
     });
 
-    console.log('✅ Deduplication complete!');
-    console.log(`📊 Total unique features used: ${allUsedFeatureIds.size} IDs, ${allUsedFeatureNames.size} names`);
-    console.log('🎉 Final plan:', plan.map(s => `${s.title}: ${s.webFeatures?.length || 0} features`));
+    console.log("✅ Deduplication complete!");
+    console.log(
+      `📊 Total unique features used: ${allUsedFeatureIds.size} IDs, ${allUsedFeatureNames.size} names`
+    );
+    console.log(
+      "🎉 Final plan:",
+      plan.map((s) => `${s.title}: ${s.webFeatures?.length || 0} features`)
+    );
 
     return plan;
   } catch (error) {

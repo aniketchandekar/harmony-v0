@@ -9,12 +9,18 @@ Harmony is an AI-powered dashboard that analyzes uploaded UI designs and provide
 ## ✨ Features
 
 - **🤖 AI-Powered Analysis**: Upload UI designs and get detailed implementation plans using Google's Gemini AI
-- **🏷️ Baseline Badges**: See which web features are "Baseline" (widely supported) vs "Not Baseline"
-- **🌐 Browser Support**: Visual indicators showing Chrome, Firefox, Safari, and Edge compatibility
+- **💬 AI Assistant Chat**: Interactive chat sidebar with feature-specific context for detailed discussions
+- **🏷️ Enhanced Baseline Badges**: Complete web features metadata with timeline information and discouraged feature warnings
+- **🌐 Comprehensive Browser Support**: Visual indicators showing Chrome, Firefox, Safari, and Edge compatibility with version numbers
+- **📅 Feature Timeline**: Shows when features became "newly available" and "widely available" in Web Baseline
+- **⚠️ Discouraged Features**: Clear warnings for deprecated features with recommended alternatives
+- **📚 Rich Documentation Links**: Direct integration with MDN, specifications, explainers, Can I Use, and Web Platform Tests
+- **🎯 Smart Feature Cards**: Click "Ask AI" on any feature for contextual assistance
 - **📱 Rolling Tabs**: Horizontal scrolling tabs for easy navigation through multiple analysis sections
 - **📝 User Notes**: Add custom requirements and preferences that get incorporated into the AI analysis
-- **📊 Sidebar Status**: Green checkmarks for sections where all features are Baseline, warning triangles for attention areas
-- **🔍 Smart Filters & Sort**: Filter by feature groups, tags, security requirements, and experimental status; sort by relevance, support breadth, Baseline status, or gaps
+- **📊 Enhanced Sidebar Status**: Green checkmarks for sections where all features are Baseline, warning triangles for attention areas
+- **🔍 Advanced Filters & Sort**: Filter by feature groups, tags, security requirements, experimental status, and more; sort by relevance, support breadth, Baseline status, timeline, or gaps
+- **🚫 Duplicate Prevention**: Intelligent deduplication ensures each web feature appears only once
 - **🌙 Dark Mode**: Toggle between light and dark themes
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile devices
 
@@ -22,13 +28,17 @@ Harmony is an AI-powered dashboard that analyzes uploaded UI designs and provide
 
 Each analysis section displays detected web platform features with comprehensive metadata:
 
-- **Baseline Status Badges**: Green (Baseline), Yellow (Not Baseline), Gray (Unknown)
-- **Browser Support Pills**: Individual browser compatibility indicators with version numbers
-- **Rich Metadata**: Experimental flags, deprecated warnings, security requirements, permissions
-- **Interactive Filters**: Group by CSS/HTML/JS/PWA categories, filter by tags, security context, experimental status
-- **Sorting Options**: Relevance, support breadth, Baseline-first, Baseline year, or most browser gaps first
-- **External Links**: Direct links to MDN docs, specifications, explainers, and Web Platform Tests
-- **Baseline Timeline**: Shows the year features entered Baseline and current browser gaps
+- **Enhanced Baseline Status**: Green (Baseline), Yellow (Not Baseline), Gray (Unknown) with detailed timeline information
+- **Feature Timeline**: Shows exact dates when features became "newly available" and "widely available"
+- **Discouraged Feature Warnings**: Red alerts for deprecated features with recommended alternatives and official sources
+- **Browser Support Matrix**: Individual browser compatibility indicators with version numbers and support gaps
+- **Rich Metadata Badges**: Experimental flags, deprecated warnings, security requirements, permissions, isolation needs
+- **Interactive Feature Cards**: "Ask AI" buttons for contextual assistance about specific features
+- **Advanced Filtering**: Group by CSS/HTML/JS/PWA categories, filter by security context, experimental status, baseline year
+- **Multiple Sorting Options**: Relevance, support breadth, Baseline-first, Baseline year, or most browser gaps first
+- **External Documentation**: Direct links to MDN docs, specifications, explainers, Can I Use, and Web Platform Tests
+- **Feature Relationships**: Navigate between related features and dependencies
+- **Duplicate Prevention**: Smart deduplication ensures clean, organized feature lists
 
 ## 🚀 Run Locally
 
@@ -64,9 +74,14 @@ Each analysis section displays detected web platform features with comprehensive
 4. **Explore Results**:
    - Navigate through analysis sections using the rolling tabs
    - Look for green checkmarks (all features Baseline) or warning triangles (needs attention) in the sidebar
-   - Use filters to focus on specific feature groups, tags, or requirements
-   - Sort features by relevance, support breadth, Baseline status, or browser gaps
-5. **Check Web Features**: View baseline badges, browser support, and access external documentation links
+   - Use advanced filters to focus on specific feature groups, tags, or requirements
+   - Sort features by relevance, support breadth, Baseline status, timeline, or browser gaps
+5. **Interact with Features**: 
+   - Click "Ask AI" on any feature card for detailed, contextual assistance
+   - Review timeline information showing when features became baseline
+   - Check for discouraged feature warnings and recommended alternatives
+   - Access comprehensive documentation via integrated links
+6. **Chat with AI**: Use the chat sidebar for ongoing discussions about implementation details and best practices
 
 ## 🛠️ Tech Stack
 
@@ -80,10 +95,11 @@ Each analysis section displays detected web platform features with comprehensive
 
 ```
 ├── components/
-│   ├── AnalysisDisplay.tsx    # Main analysis results with filters, sorting, and sidebar indicators
-│   ├── BaselineBadges.tsx     # Web platform feature badges with rich metadata
+│   ├── AnalysisDisplay.tsx    # Main analysis results with advanced filters, sorting, and enhanced sidebar indicators
+│   ├── BaselineBadges.tsx     # Enhanced web platform feature cards with timeline, warnings, and AI integration
+│   ├── ChatSidebar.tsx        # Interactive AI assistant with feature-specific context support
 │   ├── FileUpload.tsx         # Image upload interface with user notes input
-│   ├── Header.tsx             # App header with theme toggle
+│   ├── Header.tsx             # App header with theme toggle and chat controls
 │   └── Icons.tsx              # SVG icon components
 ├── services/
 │   ├── geminiService.ts       # Google Gemini AI integration with user notes support
@@ -106,11 +122,14 @@ The app includes comprehensive web platform features with rich metadata:
 
 Each feature includes:
 
-- Baseline status and year (if applicable)
-- Browser support matrix with version numbers
-- Metadata flags (experimental, deprecated, behind flags, secure context, permissions)
-- Links to MDN docs, specifications, explainers, and Web Platform Tests
-- Feature grouping and tagging for easy discovery
+- **Enhanced Baseline Information**: Baseline status, timeline dates (newly available/widely available), and progression year
+- **Comprehensive Browser Support**: Support matrix with version numbers and gap identification
+- **Advanced Metadata**: Experimental flags, deprecated warnings, behind flags, secure context, permissions, isolation requirements
+- **Safety Warnings**: Clear alerts for discouraged features with recommended alternatives and official sources
+- **Rich Documentation**: Integrated links to MDN docs, specifications, explainers, Can I Use, and Web Platform Tests
+- **AI Integration**: "Ask AI" buttons for contextual feature discussions and implementation guidance
+- **Feature Relationships**: Navigation between related features and dependencies
+- **Smart Organization**: Grouping, tagging, and deduplication for clean feature discovery
 
 ## 🔧 API Configuration
 

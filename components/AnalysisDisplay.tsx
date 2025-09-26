@@ -31,6 +31,7 @@ interface AnalysisDisplayProps {
   implementationPlan: AnalysisSection[];
   isLoading: boolean;
   hasFile: boolean;
+  onAskAI?: (featureName: string, featureDetails: any) => void;
 }
 
 const LoadingSkeleton: React.FC = () => {
@@ -58,6 +59,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
   implementationPlan,
   isLoading,
   hasFile,
+  onAskAI,
 }) => {
   const hasAnalysis = implementationPlan && implementationPlan.length > 0;
 
@@ -88,23 +90,30 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     list?: WebFeature[]
   ): EnrichedFeature[] => {
     const src = list || implementationPlan[tabIndex]?.webFeatures || [];
-    return (src || []).map((f) => {
-      let baseline: FeatureBaselineStatus | undefined = f.baseline;
-      try {
-        const id = f.featureId || resolveFeatureIdByName(f.name);
-        if (id) baseline = getFeatureBaselineStatus(id) || baseline;
-      } catch {
-        // ignore
-      }
-      if (!baseline) {
+    const uniqueFeatures = new Map<string, EnrichedFeature>();
+
+    (src || []).forEach((f) => {
+      if (!uniqueFeatures.has(f.name)) {
+        let baseline: FeatureBaselineStatus | undefined = f.baseline;
         try {
-          baseline = getFeatureBaselineByName(f.name);
+          const id = f.featureId || resolveFeatureIdByName(f.name);
+          if (id) baseline = getFeatureBaselineStatus(id) || baseline;
         } catch {
           // ignore
         }
+        if (!baseline) {
+          try {
+            const b = getFeatureBaselineByName(f.name);
+            if (b) baseline = b;
+          } catch {
+            // ignore
+          }
+        }
+        uniqueFeatures.set(f.name, { ...f, baseline });
       }
-      return { ...f, baseline };
     });
+
+    return Array.from(uniqueFeatures.values());
   };
 
   // Supported group chips (fixed set)
@@ -1005,6 +1014,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
                           <BaselineBadges
                             feature={feature}
                             onFeatureClick={handleFeatureClick}
+                            onAskAI={onAskAI}
                           />
                         </div>
                       ));

@@ -13,12 +13,17 @@ interface ChatSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   implementationPlan: AnalysisSection[];
+  featureContext?: {
+    featureName: string;
+    featureDetails: any;
+  };
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
   isOpen,
   onClose,
   implementationPlan,
+  featureContext,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -37,6 +42,20 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  // Handle feature context prefill
+  useEffect(() => {
+    if (featureContext && isOpen) {
+      const prefillMessage = `Tell me more about the "${
+        featureContext.featureName
+      }" web platform feature. ${
+        featureContext.featureDetails
+          ? `I see it has ${featureContext.featureDetails.status} baseline status. `
+          : ""
+      }Please explain how to implement it, browser support considerations, and any best practices.`;
+      setInputValue(prefillMessage);
+    }
+  }, [featureContext, isOpen]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -150,8 +169,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             >
               <SparkleIcon className="w-8 h-8 mx-auto mb-2 opacity-50 animate-pulse" />
               <p className="text-sm">
-                Ask me about your implementation plan, web platform features,
-                browser compatibility, or best practices!
+                {featureContext
+                  ? `Ask me anything about "${featureContext.featureName}" or your implementation plan!`
+                  : "Ask me about your implementation plan, web platform features, browser compatibility, or best practices!"}
               </p>
               {implementationPlan.length > 0 && (
                 <p className="text-xs mt-2 opacity-75">
