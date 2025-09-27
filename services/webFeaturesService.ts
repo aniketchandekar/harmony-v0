@@ -7,7 +7,9 @@ export type BaselineStatus = "high" | "low" | "unknown";
 export interface FeatureBaselineStatus {
   status: BaselineStatus;
   support: { [browser: string]: boolean };
+  mobileSupport?: { [browser: string]: boolean };
   versions?: { [browser: string]: string | number | boolean };
+  mobileVersions?: { [browser: string]: string | number | boolean };
   // Optional metadata echoed from dataset
   description?: string;
   experimental?: boolean;
@@ -38,13 +40,26 @@ export interface FeatureBaselineStatus {
     alternatives?: string[];
   };
   caniuse?: string[]; // Caniuse feature IDs for deep linking
+  // Feature redirect handling
+  kind?: "feature" | "moved" | "split";
+  redirectTarget?: string;
+  redirectTargets?: string[];
+  // Rich content
+  descriptionHtml?: string;
+  compatFeatures?: string[];
+  // Advanced categorization
+  groups?: string[];
+  snapshots?: string[];
 }
 
 const BROWSER_SUPPORT_MAP: { [key: string]: string } = {
   chrome: "chrome",
+  chrome_android: "chrome_android",
   edge: "edge",
   firefox: "firefox",
+  firefox_android: "firefox_android",
   safari: "safari",
+  safari_ios: "safari_ios",
 };
 
 // Legacy minimal mock (kept as a fallback if an id is missing from the curated set)
@@ -279,18 +294,34 @@ export const getFeatureBaselineStatus = (
   }
 
   // Browser support detection from version/boolean flags
+  const mobileSupport: { [browser: string]: boolean } = {};
+  const mobileVersions: { [browser: string]: string | number | boolean } = {};
+
   Object.keys(BROWSER_SUPPORT_MAP).forEach((browser) => {
     const v = feature.status.support && feature.status.support[browser];
     if (typeof v === "string" || typeof v === "number") support[browser] = true;
     else if (typeof v === "boolean") support[browser] = v;
     else support[browser] = false;
     if (v !== undefined) versions[browser] = v;
+
+    // Handle mobile browsers separately
+    if (browser.includes("_android") || browser.includes("_ios")) {
+      if (typeof v === "string" || typeof v === "number")
+        mobileSupport[browser] = true;
+      else if (typeof v === "boolean") mobileSupport[browser] = v;
+      else mobileSupport[browser] = false;
+      if (v !== undefined) mobileVersions[browser] = v;
+    }
   });
 
   return {
     status,
     support,
+    mobileSupport:
+      Object.keys(mobileSupport).length > 0 ? mobileSupport : undefined,
     versions,
+    mobileVersions:
+      Object.keys(mobileVersions).length > 0 ? mobileVersions : undefined,
     experimental: feature.experimental,
     deprecated: feature.deprecated,
     secureContext: feature.secureContext,
@@ -317,6 +348,20 @@ export const getFeatureBaselineStatus = (
     partialNotes: feature.partialNotes,
     discouraged: feature.discouraged,
     caniuse: feature.caniuse,
+    // Feature redirect handling
+    kind: feature.kind,
+    redirectTarget: feature.redirect_target,
+    redirectTargets: feature.redirect_targets,
+    // Rich content
+    descriptionHtml: feature.description_html,
+    compatFeatures: feature.compat_features,
+    // Advanced categorization
+    groups: feature.group
+      ? Array.isArray(feature.group)
+        ? feature.group
+        : [feature.group]
+      : undefined,
+    snapshots: feature.snapshot,
   };
 };
 
@@ -326,4 +371,48 @@ export const getFeatureBaselineByName = (
   const id = resolveFeatureIdByName(featureName);
   if (!id) return undefined;
   return getFeatureBaselineStatus(id);
+};
+
+// Handle feature redirects (moved/split features)
+export const resolveFeatureRedirects = (
+  featureId: string
+): FeatureBaselineStatus | undefined => {
+  const feature = (WEB_FEATURES_DATA as any)[featureId];
+
+  if (!feature) return undefined;
+
+  // Handle moved features
+  if (feature.kind === "moved" && feature.redirect_target) {
+    return getFeatureBaselineStatus(feature.redirect_target);
+  }
+
+  // Handle split features - return the first (most relevant) target
+  if (
+    feature.kind === "split" &&
+    feature.redirect_targets &&
+    feature.redirect_targets.length > 0
+  ) {
+    return getFeatureBaselineStatus(feature.redirect_targets[0]);
+  }
+
+  // Regular feature
+  return getFeatureBaselineStatus(featureId);
+};
+
+// Get all redirect targets for split features
+export const getSplitFeatureTargets = (
+  featureId: string
+): FeatureBaselineStatus[] => {
+  const feature = (WEB_FEATURES_DATA as any)[featureId];
+
+  if (feature && feature.kind === "split" && feature.redirect_targets) {
+    return feature.redirect_targets
+      .map((id: string) => getFeatureBaselineStatus(id))
+      .filter(
+        (f: FeatureBaselineStatus | undefined): f is FeatureBaselineStatus =>
+          f !== undefined
+      );
+  }
+
+  return [];
 };

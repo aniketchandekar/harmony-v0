@@ -84,6 +84,24 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
 
   type EnrichedFeature = WebFeature & { baseline?: FeatureBaselineStatus };
 
+  // Helper function to check if feature matches selected group (supports multiple groups)
+  const featureMatchesGroup = (
+    baseline: FeatureBaselineStatus | undefined,
+    targetGroup: string
+  ): boolean => {
+    if (targetGroup === "all") return true;
+    if (!baseline) return false;
+
+    // Support both single group (legacy) and multiple groups (new schema)
+    if (baseline.groups && baseline.groups.length > 0) {
+      return baseline.groups.includes(targetGroup);
+    }
+    if (baseline.group) {
+      return baseline.group === targetGroup;
+    }
+    return false;
+  };
+
   // Build enriched list with baseline details
   const buildEnrichedList = (
     tabIndex: number,
@@ -121,12 +139,16 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     () => [
       { id: "css", label: "CSS" },
       { id: "html", label: "HTML" },
-      { id: "javascript", label: "JS" },
+      { id: "javascript", label: "JavaScript" },
+      { id: "web-apis", label: "Web APIs" },
       { id: "pwa", label: "PWA" },
+      { id: "media", label: "Media" },
+      { id: "graphics", label: "Graphics" },
+      { id: "security", label: "Security" },
       { id: "storage", label: "Storage" },
       { id: "network", label: "Network" },
-      { id: "media", label: "Media" },
-      { id: "security", label: "Security" },
+      { id: "performance", label: "Performance" },
+      { id: "i18n", label: "Internationalization" },
       { id: "sensors", label: "Sensors" },
     ],
     []
@@ -184,9 +206,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
           !onlyBehindFlag &&
           !onlyPartialSupport
         );
-      if (selectedGroup !== "all" && b.group && b.group !== selectedGroup)
-        return false;
-      if (selectedGroup !== "all" && !b.group) return false;
+      if (!featureMatchesGroup(b, selectedGroup)) return false;
       if (requireSecure && !b.secureContext) return false;
       if (requirePermissions && !(b.permissions && b.permissions.length > 0))
         return false;
@@ -239,9 +259,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     );
     const passesBase = (b: FeatureBaselineStatus | undefined) => {
       if (!b) return false;
-      if (selectedGroup !== "all") {
-        if (!b.group || b.group !== selectedGroup) return false;
-      }
+      if (!featureMatchesGroup(b, selectedGroup)) return false;
       if (selectedTag !== "all") {
         if (!b.tags || !b.tags.includes(selectedTag)) return false;
       }
@@ -464,7 +482,14 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
       if (selectedTag !== "all" && (!b.tags || !b.tags.includes(selectedTag)))
         return;
       all++;
-      if (b.group) counts[b.group] = (counts[b.group] || 0) + 1;
+      // Handle multiple groups per feature
+      if (b.groups && b.groups.length > 0) {
+        b.groups.forEach((group) => {
+          counts[group] = (counts[group] || 0) + 1;
+        });
+      } else if (b.group) {
+        counts[b.group] = (counts[b.group] || 0) + 1;
+      }
     });
     return { all, ...counts };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -494,9 +519,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     enriched.forEach((e) => {
       const b = e.baseline;
       if (!b) return; // ignore unknowns for tags
-      if (selectedGroup !== "all") {
-        if (!b.group || b.group !== selectedGroup) return;
-      }
+      if (!featureMatchesGroup(b, selectedGroup)) return;
       if (requireSecure && !b.secureContext) return;
       if (requirePermissions && !(b.permissions && b.permissions.length > 0))
         return;

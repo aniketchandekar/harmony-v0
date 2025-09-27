@@ -6,6 +6,8 @@ import {
 import {
   getFeatureBaselineStatus,
   getFeatureBaselineByName,
+  resolveFeatureRedirects,
+  getSplitFeatureTargets,
 } from "../services/webFeaturesService";
 import {
   CheckCircleIcon,
@@ -68,48 +70,124 @@ const BrowserSupport: React.FC<BrowserSupportProps> = ({
   versions,
 }) => {
   const browserConfig = {
-    chrome: { name: "Chrome", color: "text-blue-600" },
-    firefox: { name: "Firefox", color: "text-orange-600" },
-    safari: { name: "Safari", color: "text-gray-600" },
-    edge: { name: "Edge", color: "text-blue-500" },
+    chrome: { name: "Chrome", color: "text-blue-600", mobile: false },
+    chrome_android: {
+      name: "Chrome Android",
+      color: "text-blue-600",
+      mobile: true,
+    },
+    firefox: { name: "Firefox", color: "text-orange-600", mobile: false },
+    firefox_android: {
+      name: "Firefox Android",
+      color: "text-orange-600",
+      mobile: true,
+    },
+    safari: { name: "Safari", color: "text-gray-600", mobile: false },
+    safari_ios: { name: "Safari iOS", color: "text-gray-600", mobile: true },
+    edge: { name: "Edge", color: "text-blue-500", mobile: false },
   };
 
+  // Separate desktop and mobile browsers
+  const desktopBrowsers = Object.entries(support).filter(
+    ([browser]) => !browserConfig[browser as keyof typeof browserConfig]?.mobile
+  );
+  const mobileBrowsers = Object.entries(support).filter(
+    ([browser]) => browserConfig[browser as keyof typeof browserConfig]?.mobile
+  );
+
   return (
-    <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-        Browser Support:
-      </span>
-      <div className="flex items-center flex-wrap gap-2">
-        {Object.entries(support).map(([browser, isSupported]) => {
-          const config = browserConfig[browser as keyof typeof browserConfig];
-          const version = versions?.[browser];
-          return (
-            <div
-              key={browser}
-              className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                isSupported
-                  ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-                  : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
-              }`}
-              title={`${config?.name || browser}: ${
-                isSupported ? "Supported" : "Not supported"
-              }${version !== undefined ? ` (since ${String(version)})` : ""}`}
-            >
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  isSupported ? "bg-green-500" : "bg-red-500"
-                }`}
-              />
-              <span className="capitalize">
-                {config?.name || browser}
-                {version !== undefined && isSupported
-                  ? ` ${String(version)}`
-                  : ""}
-              </span>
-            </div>
-          );
-        })}
+    <div className="flex flex-col space-y-3">
+      <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+          Browser Support:
+        </span>
       </div>
+
+      {/* Desktop Browsers */}
+      {desktopBrowsers.length > 0 && (
+        <div>
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">
+            🖥️ Desktop:
+          </span>
+          <div className="flex items-center flex-wrap gap-2">
+            {desktopBrowsers.map(([browser, isSupported]) => {
+              const config =
+                browserConfig[browser as keyof typeof browserConfig];
+              const version = versions?.[browser];
+              return (
+                <div
+                  key={browser}
+                  className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    isSupported
+                      ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                      : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                  }`}
+                  title={`${config?.name || browser}: ${
+                    isSupported ? "Supported" : "Not supported"
+                  }${
+                    version !== undefined ? ` (since ${String(version)})` : ""
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      isSupported ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  />
+                  <span className="capitalize">
+                    {config?.name || browser}
+                    {version !== undefined && isSupported
+                      ? ` ${String(version)}`
+                      : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Browsers */}
+      {mobileBrowsers.length > 0 && (
+        <div>
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">
+            📱 Mobile:
+          </span>
+          <div className="flex items-center flex-wrap gap-2">
+            {mobileBrowsers.map(([browser, isSupported]) => {
+              const config =
+                browserConfig[browser as keyof typeof browserConfig];
+              const version = versions?.[browser];
+              return (
+                <div
+                  key={browser}
+                  className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    isSupported
+                      ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                      : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                  }`}
+                  title={`${config?.name || browser}: ${
+                    isSupported ? "Supported" : "Not supported"
+                  }${
+                    version !== undefined ? ` (since ${String(version)})` : ""
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      isSupported ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  />
+                  <span className="capitalize">
+                    {config?.name || browser}
+                    {version !== undefined && isSupported
+                      ? ` ${String(version)}`
+                      : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -132,16 +210,59 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
   onFeatureClick,
   onAskAI,
 }) => {
-  // Compute baseline on the fly if missing and we have an ID
-  const baseline: FeatureBaselineStatus | undefined =
+  // Compute baseline on the fly if missing and we have an ID, with redirect handling
+  let baseline: FeatureBaselineStatus | undefined =
     feature.baseline ||
     (feature.featureId
-      ? getFeatureBaselineStatus(feature.featureId)
+      ? resolveFeatureRedirects(feature.featureId) ||
+        getFeatureBaselineStatus(feature.featureId)
       : getFeatureBaselineByName(feature.name));
+
+  // Handle split features - get all targets
+  const splitTargets =
+    feature.featureId && baseline?.kind === "split"
+      ? getSplitFeatureTargets(feature.featureId)
+      : [];
 
   return (
     <div className="my-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
       <div className="flex flex-col space-y-3">
+        {/* Feature redirect notices */}
+        {baseline?.kind === "moved" && baseline.redirectTarget && (
+          <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+            <div className="flex items-center space-x-2">
+              <span className="text-blue-600 dark:text-blue-400 text-xs">
+                🔄 This feature has moved:
+              </span>
+              <button
+                onClick={() => onFeatureClick?.(baseline.redirectTarget!)}
+                className="text-blue-700 dark:text-blue-300 underline hover:text-blue-900 dark:hover:text-blue-100 text-xs font-medium"
+              >
+                {baseline.redirectTarget}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {splitTargets.length > 0 && (
+          <div className="mb-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+            <div className="text-amber-700 dark:text-amber-300 text-xs mb-1">
+              🔀 This feature has multiple implementations:
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {splitTargets.map((target, index) => (
+                <button
+                  key={target.id || index}
+                  onClick={() => onFeatureClick?.(target.id!)}
+                  className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 hover:bg-amber-200 dark:hover:bg-amber-900/40 transition-colors cursor-pointer"
+                >
+                  {target.title || target.id}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
             {baseline?.title || feature.name}
@@ -165,10 +286,18 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
           </div>
         </div>
 
-        {baseline?.description && (
-          <p className="text-xs text-slate-600 dark:text-slate-400">
-            {baseline.description}
-          </p>
+        {/* Rich HTML description or fallback to plain text */}
+        {baseline?.descriptionHtml ? (
+          <div
+            className="text-xs text-slate-600 dark:text-slate-400 prose prose-xs dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: baseline.descriptionHtml }}
+          />
+        ) : (
+          baseline?.description && (
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              {baseline.description}
+            </p>
+          )
         )}
 
         {/* Secondary badges */}

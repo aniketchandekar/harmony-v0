@@ -11,7 +11,7 @@ Harmony is an AI-powered dashboard that analyzes uploaded UI designs and provide
 - **🤖 AI-Powered Analysis**: Upload UI designs and get detailed implementation plans using Google's Gemini AI
 - **💬 AI Assistant Chat**: Interactive chat sidebar with feature-specific context for detailed discussions
 - **🏷️ Enhanced Baseline Badges**: Complete web features metadata with timeline information and discouraged feature warnings
-- **🌐 Comprehensive Browser Support**: Visual indicators showing Chrome, Firefox, Safari, and Edge compatibility with version numbers
+- **🌐 Comprehensive Browser Support**: Visual indicators showing desktop (Chrome, Firefox, Safari, Edge) and mobile (Chrome Android, Firefox Android, Safari iOS) compatibility with version numbers
 - **📅 Feature Timeline**: Shows when features became "newly available" and "widely available" in Web Baseline
 - **⚠️ Discouraged Features**: Clear warnings for deprecated features with recommended alternatives
 - **📚 Rich Documentation Links**: Direct integration with MDN, specifications, explainers, Can I Use, and Web Platform Tests
@@ -76,7 +76,7 @@ Each analysis section displays detected web platform features with comprehensive
    - Look for green checkmarks (all features Baseline) or warning triangles (needs attention) in the sidebar
    - Use advanced filters to focus on specific feature groups, tags, or requirements
    - Sort features by relevance, support breadth, Baseline status, timeline, or browser gaps
-5. **Interact with Features**: 
+5. **Interact with Features**:
    - Click "Ask AI" on any feature card for detailed, contextual assistance
    - Review timeline information showing when features became baseline
    - Check for discouraged feature warnings and recommended alternatives

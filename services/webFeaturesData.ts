@@ -6,6 +6,9 @@ export type FeatureSupport = {
   firefox?: string | number | boolean;
   safari?: string | number | boolean;
   edge?: string | number | boolean;
+  chrome_android?: string | number | boolean;
+  firefox_android?: string | number | boolean;
+  safari_ios?: string | number | boolean;
 };
 
 export type WebFeatureRecord = {
@@ -75,7 +78,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
       "Two‑dimensional layout system enabling rows and columns for complex, responsive layouts.",
     status: {
       baseline: true,
-      support: { chrome: "57", firefox: "52", safari: "10.1", edge: "16" },
+      support: { 
+        chrome: "57", 
+        firefox: "52", 
+        safari: "10.1", 
+        edge: "16",
+        chrome_android: "57",
+        firefox_android: "52",
+        safari_ios: "10.3"
+      },
     },
     aliases: ["grid", "grid layout", "css grid"],
     group: "css",
@@ -92,7 +103,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
       "One‑dimensional layout model for distributing space and aligning items within a container.",
     status: {
       baseline: true,
-      support: { chrome: "29", firefox: "28", safari: "9", edge: "12" },
+      support: { 
+        chrome: "29", 
+        firefox: "28", 
+        safari: "9", 
+        edge: "12",
+        chrome_android: "29",
+        firefox_android: "28",
+        safari_ios: "9"
+      },
     },
     aliases: ["flex", "flexbox", "flex layout", "css flexbox"],
     group: "css",
@@ -139,7 +158,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     title: "Dark Mode (prefers-color-scheme)",
     status: {
       baseline: true,
-      support: { chrome: "76", firefox: "67", safari: "12.1", edge: "79" },
+      support: { 
+        chrome: "76", 
+        firefox: "67", 
+        safari: "12.1", 
+        edge: "79",
+        chrome_android: "76",
+        firefox_android: "67",
+        safari_ios: "13"
+      },
     },
     aliases: ["dark mode", "theming", "prefers-color-scheme"],
     group: "css",
@@ -251,7 +278,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
       "Built‑in modal and non‑modal dialog container with focus management and the showModal() API.",
     status: {
       baseline: true,
-      support: { chrome: true, firefox: true, safari: true, edge: true },
+      support: { 
+        chrome: true, 
+        firefox: true, 
+        safari: true, 
+        edge: true,
+        chrome_android: true,
+        firefox_android: true,
+        safari_ios: "15.4"
+      },
     },
     aliases: ["dialog", "modal dialog"],
     group: "html",
@@ -384,7 +419,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
       "Background script for offline caching, network control, and push/background tasks.",
     status: {
       baseline: true,
-      support: { chrome: true, firefox: true, safari: true, edge: true },
+      support: { 
+        chrome: true, 
+        firefox: true, 
+        safari: true, 
+        edge: true,
+        chrome_android: true,
+        firefox_android: true,
+        safari_ios: "11.1"
+      },
     },
     aliases: ["service worker", "sw"],
     group: "pwa",
@@ -413,7 +456,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     title: "Web Share API",
     status: {
       baseline: "low",
-      support: { chrome: true, firefox: false, safari: true, edge: true },
+      support: { 
+        chrome: true, 
+        firefox: false, 
+        safari: true, 
+        edge: true,
+        chrome_android: true,
+        firefox_android: false,
+        safari_ios: true
+      },
     },
     aliases: ["navigator.share", "web share"],
     group: "pwa",
@@ -482,7 +533,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     title: "Geolocation API",
     status: {
       baseline: true,
-      support: { chrome: true, firefox: true, safari: true, edge: true },
+      support: { 
+        chrome: true, 
+        firefox: true, 
+        safari: true, 
+        edge: true,
+        chrome_android: true,
+        firefox_android: true,
+        safari_ios: true
+      },
     },
     aliases: ["geolocation"],
     group: "sensors",
@@ -522,7 +581,15 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
       "Real‑time audio/video and data channels between peers with NAT traversal.",
     status: {
       baseline: true,
-      support: { chrome: true, firefox: true, safari: true, edge: true },
+      support: { 
+        chrome: true, 
+        firefox: true, 
+        safari: true, 
+        edge: true,
+        chrome_android: true,
+        firefox_android: true,
+        safari_ios: "11"
+      },
     },
     aliases: ["webrtc", "rtc"],
     group: "media",
