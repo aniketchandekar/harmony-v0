@@ -16,6 +16,12 @@ import {
   SparkleIcon,
 } from "./Icons";
 
+const LightBulbIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+    <path d="M10 2a6 6 0 00-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 00.515 1.076 32.91 32.91 0 003.256.508 3.5 3.5 0 006.972 0 32.903 32.903 0 003.256-.508.75.75 0 00.515-1.076A11.448 11.448 0 0116 8a6 6 0 00-6-6zM8.05 14.943a33.54 33.54 0 003.9 0 2 2 0 01-3.9 0z" />
+  </svg>
+);
+
 interface BaselineBadgeProps {
   status: BaselineStatus;
 }
@@ -203,12 +209,18 @@ interface BaselineBadgesProps {
     featureName: string,
     featureDetails: FeatureBaselineStatus | undefined
   ) => void;
+  onGenerateFallback?: (feature: {
+    name: string;
+    featureId?: string;
+    baseline?: FeatureBaselineStatus;
+  }) => void;
 }
 
 export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
   feature,
   onFeatureClick,
   onAskAI,
+  onGenerateFallback,
 }) => {
   // Compute baseline on the fly if missing and we have an ID, with redirect handling
   let baseline: FeatureBaselineStatus | undefined =
@@ -283,6 +295,50 @@ export const BaselineBadges: React.FC<BaselineBadgesProps> = ({
                 Ask AI
               </button>
             )}
+            {(!baseline || baseline.status !== "high") &&
+              onGenerateFallback && (
+                <button
+                  onClick={() => onGenerateFallback(feature)}
+                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/40 transition-colors"
+                  title="Generate AI-powered fallback/polyfill"
+                >
+                  <SparkleIcon className="w-3 h-3 mr-1" />
+                  AI Generate Fallback
+                </button>
+              )}
+            {baseline &&
+              (baseline.status === "low" || !baseline.status) &&
+              (baseline as any).suggestions &&
+              (baseline as any).suggestions.length > 0 && (
+                <div className="relative group">
+                  <button
+                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800 hover:bg-amber-200 dark:hover:bg-amber-900/40 transition-colors"
+                    title="View baseline alternatives"
+                  >
+                    <LightBulbIcon className="w-3 h-3 mr-1" />
+                    Suggestions
+                  </button>
+                  <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-48 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                      Baseline alternatives:
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {(baseline as any).suggestions.map(
+                        (suggestionId: string) => (
+                          <button
+                            key={suggestionId}
+                            onClick={() => onFeatureClick?.(suggestionId)}
+                            className="text-left px-2 py-1 text-xs bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 rounded hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                          >
+                            ✅{" "}
+                            {suggestionId.split(".").pop()?.replace(/-/g, " ")}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
           </div>
         </div>
 

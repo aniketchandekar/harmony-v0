@@ -14,6 +14,11 @@ import {
   getFeatureBaselineByName,
   resolveFeatureIdByName,
 } from "../services/webFeaturesService";
+import { FallbackModal } from "./FallbackModal";
+import {
+  generateFallback,
+  FallbackCode,
+} from "../services/codeGenerationService";
 
 export interface WebFeature {
   featureId: string;
@@ -61,6 +66,55 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
   hasFile,
   onAskAI,
 }) => {
+  const [isFallbackModalOpen, setIsFallbackModalOpen] = useState(false);
+  const [fallbackCode, setFallbackCode] = useState<FallbackCode | null>(null);
+  const [selectedFeatureForFallback, setSelectedFeatureForFallback] =
+    useState<WebFeature | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateFallback = async (feature: WebFeature) => {
+    console.log("handleGenerateFallback called for feature:", feature);
+    setSelectedFeatureForFallback(feature);
+    setIsFallbackModalOpen(true);
+    setIsGenerating(true);
+    try {
+      const unsupported = Object.entries(feature.baseline?.support || {})
+        .filter(([, supported]) => !supported)
+        .map(([browser]) => browser);
+
+      console.log(
+        "Calling generateFallback with unsupported browsers:",
+        unsupported
+      );
+
+      const fallback = await generateFallback(
+        feature.name,
+        unsupported,
+        feature.baseline
+      );
+
+      console.log("generateFallback result:", fallback);
+      setFallbackCode(fallback);
+    } catch (error) {
+      console.error("Failed to generate fallback:", error);
+      // show a minimal error message in the modal instead of crashing
+      setFallbackCode({
+        code: `// Failed to generate fallback: ${String(error)}`,
+        bundleSizeImpact: "N/A",
+        notes:
+          "There was an error generating the fallback. Check the browser console for details. If you are running in the browser, ensure server-side AI integration is available.",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsFallbackModalOpen(false);
+    setFallbackCode(null);
+    setSelectedFeatureForFallback(null);
+  };
+
   const hasAnalysis = implementationPlan && implementationPlan.length > 0;
 
   // UI state
@@ -102,7 +156,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     return false;
   };
 
-  // Build enriched list with baseline details
+  // Build enriched list with baseline details and deduplication
   const buildEnrichedList = (
     tabIndex: number,
     list?: WebFeature[]
@@ -111,7 +165,15 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     const uniqueFeatures = new Map<string, EnrichedFeature>();
 
     (src || []).forEach((f) => {
-      if (!uniqueFeatures.has(f.name)) {
+      // Create a normalized key for deduplication - handle common variations
+      let normalizedName = f.name
+        .toLowerCase()
+        .trim()
+        .replace(/[\(\)\[\]]/g, "") // remove brackets/parentheses
+        .replace(/[\s\-_]+/g, " ") // normalize spaces/dashes/underscores
+        .replace(/\?\./g, "optional chaining"); // normalize ?. to "optional chaining"
+
+      if (!uniqueFeatures.has(normalizedName)) {
         let baseline: FeatureBaselineStatus | undefined = f.baseline;
         try {
           const id = f.featureId || resolveFeatureIdByName(f.name);
@@ -127,7 +189,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
             // ignore
           }
         }
-        uniqueFeatures.set(f.name, { ...f, baseline });
+        uniqueFeatures.set(normalizedName, { ...f, baseline });
       }
     });
 
@@ -561,9 +623,14 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
     const enriched = buildEnrichedList(tabIndex, list);
     const filtered = enriched.filter((e) => {
       const b = e.baseline;
-      if (!b) return false; // hide unknowns from list
+      // Allow features without baseline to be displayed
+      if (!b) {
+        // Apply basic filters even for unknown features if desired
+        if (selectedGroup !== "all" || selectedTag !== "all") return false;
+        return true;
+      }
       if (selectedGroup !== "all") {
-        if (!b.group || b.group !== selectedGroup) return false;
+        if (!featureMatchesGroup(b, selectedGroup)) return false;
       }
       if (selectedTag !== "all") {
         if (!b.tags || !b.tags.includes(selectedTag)) return false;
@@ -749,6 +816,13 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
               </div>
             </div>
           )}
+
+          <FallbackModal
+            isOpen={isFallbackModalOpen}
+            onClose={handleCloseModal}
+            fallbackCode={isGenerating ? null : fallbackCode}
+            featureName={selectedFeatureForFallback?.name || ""}
+          />
 
           <div className="flex flex-1 min-h-0">
             {/* Vertical tab list */}
@@ -1026,11 +1100,11 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
                       }
                       return list.map((feature) => (
                         <div
-                          key={feature.featureId}
+                          key={feature.featureId || feature.name}
                           data-feature-id={feature.featureId}
-                          className={`transition-all duration-500 ${
+                          className={`transition-all duration-300 ${
                             highlightedFeature === feature.featureId
-                              ? "ring-2 ring-indigo-400 ring-opacity-75 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg"
+                              ? "ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-800 rounded-lg"
                               : ""
                           }`}
                         >
@@ -1038,6 +1112,7 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
                             feature={feature}
                             onFeatureClick={handleFeatureClick}
                             onAskAI={onAskAI}
+                            onGenerateFallback={handleGenerateFallback}
                           />
                         </div>
                       ));

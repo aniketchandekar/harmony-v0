@@ -322,15 +322,16 @@ ${planContext}${conversationHistory}
 User Question: ${userMessage}
 
 Guidelines:
-- Provide helpful, specific, and actionable advice about web development, implementation strategies, and web platform features
+- If the user asks for a code example or prototype, generate a complete, production-ready code snippet (HTML, CSS, or JavaScript). For larger examples, you can provide a link to a pre-filled CodePen.
 - If the user asks about browser support, reference baseline status and provide specific version information when relevant
 - Be concise but thorough - aim for practical guidance over theoretical explanations
 - If discussing web platform features, mention their baseline status (Baseline, Not Baseline, or Unknown) when relevant
 - For implementation questions, suggest concrete code approaches or architectural patterns
 - If the user asks about something not in the current plan, feel free to expand with relevant web platform knowledge
 - Keep responses conversational and helpful
+- Use Markdown for code blocks.
 
-Respond in plain text (no markdown formatting needed for chat).`;
+Respond in Markdown.`;
 
   try {
     const result = await model.generateContent({

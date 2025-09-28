@@ -57,6 +57,11 @@ export type WebFeatureRecord = {
   links?: {
     explainer?: string;
   };
+  // Timeline data
+  baselineLowDate?: string; // ISO date when became "newly available"
+  baselineHighDate?: string; // ISO date when became "widely available"
+  // Suggestions for non-baseline features
+  suggestions?: string[]; // ids of alternative baseline features
 };
 
 export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
@@ -90,6 +95,9 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["grid", "grid layout", "css grid"],
     group: "css",
+    baselineYear: 2017,
+    baselineLowDate: "2017-03-07",
+    baselineHighDate: "2019-09-07",
     related: [
       "css.properties.flexbox",
       "css.properties.container-query",
@@ -115,6 +123,9 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["flex", "flexbox", "flex layout", "css flexbox"],
     group: "css",
+    baselineYear: 2015,
+    baselineLowDate: "2015-09-30",
+    baselineHighDate: "2018-03-30",
     related: [
       "css.properties.grid",
       "css.properties.aspect-ratio",
@@ -130,6 +141,7 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["container queries", "container query"],
     group: "css",
+    suggestions: ["css.at-rules.media", "css.properties.flexbox"],
   },
   "css.properties.aspect-ratio": {
     id: "css.properties.aspect-ratio",
@@ -212,6 +224,9 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["clamp", "fluid typography"],
     group: "css",
+    baselineYear: 2020,
+    baselineLowDate: "2020-04-07",
+    baselineHighDate: "2022-10-07",
   },
 
   // Modern selectors
@@ -226,6 +241,8 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: [":has", "has selector"],
     group: "css",
+    baselineYear: 2024,
+    baselineLowDate: "2024-03-05",
   },
   "css.selectors.is": {
     id: "css.selectors.is",
@@ -290,6 +307,9 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["dialog", "modal dialog"],
     group: "html",
+    baselineYear: 2022,
+    baselineLowDate: "2022-03-14",
+    baselineHighDate: "2024-09-14",
     mdn: "https://developer.mozilla.org/docs/Web/HTML/Element/dialog",
     links: { explainer: "https://open-ui.org/components/dialog.research" },
   },
@@ -302,6 +322,7 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["popover", "popover attribute"],
     group: "html",
+    suggestions: ["html.elements.dialog"],
     mdn: "https://developer.mozilla.org/docs/Web/HTML/Global_attributes/popover",
   },
 
@@ -309,13 +330,27 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
   "js.syntax.optional-chaining": {
     id: "js.syntax.optional-chaining",
     title: "Optional chaining (?.)",
+    description: "Safe property access that returns undefined instead of throwing errors when accessing nested object properties that might be null or undefined.",
     status: {
       baseline: true,
-      support: { chrome: true, firefox: true, safari: true, edge: true },
+      support: { 
+        chrome: "80", 
+        firefox: "72", 
+        safari: "13.1", 
+        edge: "80",
+        chrome_android: "80",
+        firefox_android: "79",
+        safari_ios: "13.4"
+      },
     },
-    aliases: ["optional chaining", "?."],
+    aliases: ["optional chaining", "?.", "safe navigation", "null conditional"],
     group: "javascript",
+    baselineYear: 2020,
+    baselineLowDate: "2020-04-07",
+    baselineHighDate: "2022-10-07",
+    tags: ["syntax", "safety", "es2020"],
     mdn: "https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Optional_chaining",
+    spec: "https://tc39.es/ecma262/#sec-optional-chaining",
   },
   "js.syntax.top-level-await": {
     id: "js.syntax.top-level-await",
@@ -339,6 +374,7 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     },
     aliases: ["import maps"],
     group: "javascript",
+    suggestions: ["js.syntax.optional-chaining"],
     mdn: "https://developer.mozilla.org/docs/Web/HTML/Element/script/type/importmap",
     links: { explainer: "https://github.com/WICG/import-maps" },
   },
@@ -434,6 +470,9 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     secureContext: true,
     hasWPT: true,
     tags: ["offline", "cache", "background"],
+    baselineYear: 2018,
+    baselineLowDate: "2018-01-25",
+    baselineHighDate: "2020-07-25",
     dependsOn: ["api.cache-storage"],
     related: ["api.web-app-manifest", "api.web-share", "api.fetch"],
     mdn: "https://developer.mozilla.org/docs/Web/API/Service_Worker_API",
@@ -484,6 +523,7 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     secureContext: true,
     permissions: ["local-files"],
     tags: ["files", "opfs"],
+    suggestions: ["api.indexeddb"],
     mdn: "https://developer.mozilla.org/docs/Web/API/File_System_Access_API",
   },
 
@@ -622,6 +662,8 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     aliases: ["view transitions", "document.startViewTransition"],
     group: "web-apis",
     tags: ["animations", "spa"],
+    baselineYear: 2024,
+    baselineLowDate: "2024-05-14",
     dependsOn: ["api.navigation"],
     related: ["css.selectors.has", "css.functions.clamp"],
     mdn: "https://developer.mozilla.org/docs/Web/API/View_Transitions_API",
@@ -778,6 +820,7 @@ export const WEB_FEATURES_DATA: Record<string, WebFeatureRecord> = {
     secureContext: true,
     experimental: true,
     tags: ["gpu", "graphics", "compute"],
+    suggestions: ["api.offscreen-canvas"],
     related: ["js.sharedarraybuffer", "api.offscreen-canvas", "api.webcodecs"],
     mdn: "https://developer.mozilla.org/docs/Web/API/WebGPU_API",
   },
