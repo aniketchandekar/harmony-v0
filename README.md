@@ -62,6 +62,30 @@ Each analysis section displays detected web platform features with comprehensive
 4. **Open your browser:**
    Navigate to `http://localhost:5173` (or the port shown in terminal)
 
+## 🔁 Local AI proxy (optional)
+
+For AI-generated fallbacks the app can call a local server that forwards requests to Google Gemini.
+
+1. Ensure you have a `.env.local` in the project root with your Gemini key:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+2. Start the AI proxy server (the server reads `.env.local` automatically):
+
+```powershell
+npm run start:server
+```
+
+3. Then start the frontend dev server in a separate terminal:
+
+```powershell
+npm run dev
+```
+
+If the proxy is running, the frontend will POST to `/api/generate-fallback` to request real AI outputs; otherwise the UI falls back to a deterministic mock.
+
 ## 🎨 How to Use
 
 1. **Upload a Design**: Click the upload area or drag & drop an image file (PNG, JPG, WEBP under 4MB)
