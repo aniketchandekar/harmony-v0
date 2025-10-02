@@ -86,6 +86,8 @@ npm run dev
 
 If the proxy is running, the frontend will POST to `/api/generate-fallback` to request real AI outputs; otherwise the UI falls back to a deterministic mock.
 
+Note: The "AI Generate Fallback" button and modal were removed from the UI in this branch. The local AI proxy remains in the repository as an optional integration for future use. If you don't plan to use the proxy, you can safely ignore or remove `server/index.js` and `services/codeGenerationService.ts`.
+
 ## 🎨 How to Use
 
 1. **Upload a Design**: Click the upload area or drag & drop an image file (PNG, JPG, WEBP under 4MB)
