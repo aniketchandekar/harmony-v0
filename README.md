@@ -153,7 +153,40 @@ Each feature includes:
 - **Feature Relationships**: Navigation between related features and dependencies
 - **Smart Organization**: Grouping, tagging, and deduplication for clean feature discovery
 
-## 🔧 API Configuration
+## � Deploy to Netlify
+
+The project is ready for Netlify deployment with the included `netlify.toml` configuration.
+
+### Quick Deploy
+
+1. **Push to GitHub** (if not already done):
+   ```bash
+   git add .
+   git commit -m "feat: add netlify config"
+   git push origin main
+   ```
+
+2. **Deploy on Netlify**:
+   - Go to [netlify.com](https://netlify.com) and sign in
+   - Click "New site from Git"
+   - Connect your GitHub repository
+   - Netlify will auto-detect the build settings from `netlify.toml`
+
+3. **Set Environment Variables** (in Netlify dashboard):
+   - Go to Site settings → Environment variables
+   - Add: `GEMINI_API_KEY` = `your_api_key_here`
+
+4. **Deploy**: Netlify will build and deploy automatically
+
+### Build Configuration
+
+- **Build command**: `npm run build`
+- **Publish directory**: `dist`
+- **Node version**: 18
+- **SPA routing**: Configured for React Router
+- **Security headers**: Added for production
+
+## �🔧 API Configuration
 
 The app uses Vite to inject environment variables and persists user preferences:
 
